@@ -1,0 +1,3 @@
+/home/mohamed/dev/nypkg/CMakeFiles/nypkg.dir
+/home/mohamed/dev/nypkg/CMakeFiles/edit_cache.dir
+/home/mohamed/dev/nypkg/CMakeFiles/rebuild_cache.dir

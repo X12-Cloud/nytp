@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/nypkg.dir/link.d CMakeFiles/nypkg.dir/src/json_parser.cpp.o CMakeFiles/nypkg.dir/src/main.cpp.o CMakeFiles/nypkg.dir/src/manager.cpp.o CMakeFiles/nypkg.dir/src/package.cpp.o -o nypkg

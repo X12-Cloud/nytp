@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/mohamed/dev/nypkg/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

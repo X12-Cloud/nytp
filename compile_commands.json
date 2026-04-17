@@ -1,0 +1,26 @@
+[
+{
+  "directory": "/home/mohamed/dev/nypkg",
+  "command": "/usr/bin/c++  -I/home/mohamed/dev/nypkg/include -std=gnu++17 -o CMakeFiles/nypkg.dir/src/json_parser.cpp.o -c /home/mohamed/dev/nypkg/src/json_parser.cpp",
+  "file": "/home/mohamed/dev/nypkg/src/json_parser.cpp",
+  "output": "CMakeFiles/nypkg.dir/src/json_parser.cpp.o"
+},
+{
+  "directory": "/home/mohamed/dev/nypkg",
+  "command": "/usr/bin/c++  -I/home/mohamed/dev/nypkg/include -std=gnu++17 -o CMakeFiles/nypkg.dir/src/main.cpp.o -c /home/mohamed/dev/nypkg/src/main.cpp",
+  "file": "/home/mohamed/dev/nypkg/src/main.cpp",
+  "output": "CMakeFiles/nypkg.dir/src/main.cpp.o"
+},
+{
+  "directory": "/home/mohamed/dev/nypkg",
+  "command": "/usr/bin/c++  -I/home/mohamed/dev/nypkg/include -std=gnu++17 -o CMakeFiles/nypkg.dir/src/manager.cpp.o -c /home/mohamed/dev/nypkg/src/manager.cpp",
+  "file": "/home/mohamed/dev/nypkg/src/manager.cpp",
+  "output": "CMakeFiles/nypkg.dir/src/manager.cpp.o"
+},
+{
+  "directory": "/home/mohamed/dev/nypkg",
+  "command": "/usr/bin/c++  -I/home/mohamed/dev/nypkg/include -std=gnu++17 -o CMakeFiles/nypkg.dir/src/package.cpp.o -c /home/mohamed/dev/nypkg/src/package.cpp",
+  "file": "/home/mohamed/dev/nypkg/src/package.cpp",
+  "output": "CMakeFiles/nypkg.dir/src/package.cpp.o"
+}
+]
