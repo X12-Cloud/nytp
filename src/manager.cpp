@@ -36,9 +36,18 @@ void Manager::fetch(std::string url, std::string dest) {
 }
 
 void Manager::run() {
-    std::string registry_dir = std::string(home) + "/.nytrogen/registry/" + pkg.name + ".json";
-    std::string sources_dir = std::string(home) + "/.nytrogen/src/" + pkg.name + "/";
+    // Fetch online package from repo
+    if (cfg.operation == "-U") {
+        fetchRemote(cfg.pkg_name);
+        return;
+    }
 
+    std::string active_name = pkg.name.empty() ? cfg.pkg_name : pkg.name;
+
+    std::string registry_dir = std::string(home) + "/.nytrogen/registry/" + active_name + ".json";
+    std::string sources_dir = std::string(home) + "/.nytrogen/src/" + active_name + "/";
+
+    // Install package
     if (cfg.operation == "install" || cfg.operation == "-S") {
         if (std::filesystem::exists(registry_dir)) {
             std::cerr << "Package already exists." << std::endl;
@@ -58,7 +67,8 @@ void Manager::run() {
         }
     }
 
-   if (cfg.operation == "remove" || cfg.operation == "-R") {
+    // Remove package
+    if (cfg.operation == "remove" || cfg.operation == "-R") {
         if (!std::filesystem::exists(registry_dir)) {
             std::cerr << "Error: Package '" << cfg.pkg_name << "' is not installed." << std::endl;
             return;
@@ -75,29 +85,27 @@ void Manager::run() {
         std::cout << "Package successfully removed." << std::endl;
         return;
     }
-
-    if (cfg.operation == "-U") {
-        fetchRemote(cfg.pkg_name);
-    }
 }
 
-void Manager::fetchRemote(std::string url) {
+void Manager::fetchRemote(std::string pkg_name) {
+    std::string base_url = "https://raw.githubusercontent.com/X12-Cloud/nytp-r/main/";
+    std::string full_url = base_url + pkg_name + ".json";
+
     std::string tmp_file = "/tmp/nytro_remote.json";
-    std::string cmd = "curl -sL " + url + " -o " + tmp_file;
+    std::string cmd = "curl -sL " + full_url + " -o " + tmp_file;
 
     if (std::system(cmd.c_str()) == 0) {
         pkg = JsonParser::parse(tmp_file);
-        if (std::system(cmd.c_str()) == 0) {
-            pkg = JsonParser::parse(tmp_file);
-            std::cout << "Downloaded metadata for: " << pkg.name << std::endl;
-            std::cout << "Target Repo: " << pkg.repo_url << std::endl;
-        }
+
+        std::cout << "Downloaded metadata for: " << pkg.name << std::endl;
+        std::cout << "Target Repo: " << pkg.repo_url << std::endl;
+
         std::filesystem::remove(tmp_file);
 
         fetch(pkg.repo_url, pkg.name); 
         std::cout << "Remote package " << pkg.name << " registered successfully." << std::endl;
     } else {
-        std::cerr << "Failed to download package metadata from " << url << std::endl;
+        std::cerr << "Failed to download package metadata from " << full_url << std::endl;
     }
 }
 
