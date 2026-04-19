@@ -47,6 +47,9 @@ void Manager::run() {
     std::string registry_dir = std::string(home) + "/.nytrogen/registry/" + active_name + ".json";
     std::string sources_dir = std::string(home) + "/.nytrogen/src/" + active_name + "/";
 
+    std::string gloabal_reg_dir = std::string(home) + "/.nypkg/registry/" + active_name + ".json";
+    std::string global_src_dir = std::string(home) + "/.nypkg/src/" + active_name + "/";
+
     // Install package
     if (cfg.operation == "install" || cfg.operation == "-S") {
         if (std::filesystem::exists(registry_dir)) {
@@ -64,7 +67,9 @@ void Manager::run() {
             std::system(pkg.build_cmd.c_str());
         } else if (std::filesystem::exists("install.sh")) {
             std::system("chmod +x install.sh && ./install.sh");
-        }
+        } else std::cerr << "Error: No build script or install.sh file found." << std::endl;
+
+        // fetchPackgeInstall();
     }
 
     // Remove package
@@ -107,6 +112,20 @@ void Manager::fetchRemote(std::string pkg_name) {
     } else {
         std::cerr << "Failed to download package metadata from " << full_url << std::endl;
     }
+}
+
+void Manager::fetchPackgeInstall() {
+    bool is_global = false; //temp boolean for now
+    std::string binary_path = pkg.package;
+    std::string bins_dir;
+
+    if (is_global) {
+        bins_dir = std::string(home) + "/.nypkg/bins/";
+    } else {
+        bins_dir = std::string(home) + "/.nytrogen/bins/";
+    }
+
+    std::filesystem::copy_file(binary_path, bins_dir);
 }
 
 void Manager::list() {

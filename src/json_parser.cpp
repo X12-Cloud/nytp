@@ -18,6 +18,10 @@ Package JsonParser::parse(const std::filesystem::path& path) {
     if (data.contains("dependencies")) {
         pkg.dependencies = data["dependencies"].get<std::vector<std::string>>();
     }
+    // Package install instructions
+    if (data.contains("package")) {
+        pkg.package = data.value("package", "");
+    }
 
     return pkg;
 }
@@ -30,6 +34,7 @@ void JsonParser::write(const std::filesystem::path& path, const Package& pkg) {
     data["repo"] = pkg.repo_url;
     data["build"] = pkg.build_cmd;
     data["dependencies"] = pkg.dependencies;
+    data["package"] = pkg.package;
 
     std::ofstream file(path);
     if (file.is_open()) {

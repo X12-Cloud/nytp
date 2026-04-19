@@ -10,6 +10,7 @@ struct Package {
     std::string repo_url;
     std::string build_cmd;
     std::vector<std::string> dependencies;
+    std::string package;
 
     // check if the repo is available
     bool isValid() const {
