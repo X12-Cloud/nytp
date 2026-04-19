@@ -9,7 +9,7 @@ public:
     static void fetch(std::string url, std::string dest);
     static void fetchRemote(std::string url);
     static void uninstall();
-    static void fetchPackgeInstall();
+    static void fetchPackageInstall();
     static void list();
 };
 

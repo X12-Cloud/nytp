@@ -8,20 +8,12 @@
 
 Config cfg;
 
-struct Operations {
-    bool install = false;
-    bool remove = false;
-    bool url = false;
-    bool global = false;
-    bool list = false;
-} flags;
-
 std::unordered_map<std::string, bool*> flag_map {
-    {"install", &flags.install}, {"-S", &flags.install},
-    {"remove", &flags.remove},   {"-R", &flags.remove},
-    {"-U", &flags.url},
-    {"global", &flags.global},   {"-g", &flags.global},
-    {"list", &flags.list},       {"-l", &flags.list}, {"-Ql", &flags.list},
+    {"install", &cfg.flags.install}, {"-S", &cfg.flags.install},
+    {"remove", &cfg.flags.remove},   {"-R", &cfg.flags.remove},
+    {"-U", &cfg.flags.url},
+    {"global", &cfg.flags.global},   {"-g", &cfg.flags.global},
+    {"list", &cfg.flags.list},       {"-l", &cfg.flags.list}, {"-Ql", &cfg.flags.list},
 };
 
 int main(int argc, char* argv[]) {
@@ -40,7 +32,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    if (flags.list) {
+    if (cfg.flags.list) {
         Manager manager;
         manager.list();
         return 0;
@@ -53,14 +45,14 @@ int main(int argc, char* argv[]) {
 
     Manager manager;
 
-    if (flags.remove || flags.url) {
-        if (flags.url) cfg.operation = "-U";
-        if (flags.remove) cfg.operation = "-R";
+    if (cfg.flags.remove || cfg.flags.url) {
+        if (cfg.flags.url) cfg.operation = "-U";
+        if (cfg.flags.remove) cfg.operation = "-R";
 
         manager.run();
     }
 
-    if (flags.install) {
+    if (cfg.flags.install) {
         cfg.operation = "-S";
 
         std::string target_json = cfg.pkg_name;

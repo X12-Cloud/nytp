@@ -6,6 +6,15 @@
 struct Config {
     std::string operation;
     std::string pkg_name;
+
+    struct {
+        bool install = false;
+        bool remove = false;
+        bool url = false;
+        bool global = false;
+        bool list = false;
+} flags;
+
 };
 extern Config cfg;
 

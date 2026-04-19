@@ -37,21 +37,19 @@ void Manager::fetch(std::string url, std::string dest) {
 
 void Manager::run() {
     // Fetch online package from repo
-    if (cfg.operation == "-U") {
+    if (cfg.flags.url) {
         fetchRemote(cfg.pkg_name);
         return;
     }
 
     std::string active_name = pkg.name.empty() ? cfg.pkg_name : pkg.name;
+    std::string base_dir = cfg.flags.global ? "/.nypkg/" : "/.nytrogen/";
 
-    std::string registry_dir = std::string(home) + "/.nytrogen/registry/" + active_name + ".json";
-    std::string sources_dir = std::string(home) + "/.nytrogen/src/" + active_name + "/";
-
-    std::string gloabal_reg_dir = std::string(home) + "/.nypkg/registry/" + active_name + ".json";
-    std::string global_src_dir = std::string(home) + "/.nypkg/src/" + active_name + "/";
+    std::string registry_dir = std::string(home) + base_dir + "registry/" + active_name + ".json";
+    std::string sources_dir = std::string(home) + base_dir + "src/" + active_name + "/";
 
     // Install package
-    if (cfg.operation == "install" || cfg.operation == "-S") {
+    if (cfg.flags.install) {
         if (std::filesystem::exists(registry_dir)) {
             std::cerr << "Package already exists." << std::endl;
         }
@@ -69,11 +67,11 @@ void Manager::run() {
             std::system("chmod +x install.sh && ./install.sh");
         } else std::cerr << "Error: No build script or install.sh file found." << std::endl;
 
-        // fetchPackgeInstall();
+        if (!pkg.package.empty()) fetchPackageInstall();
     }
 
     // Remove package
-    if (cfg.operation == "remove" || cfg.operation == "-R") {
+    if (cfg.flags.remove) {
         if (!std::filesystem::exists(registry_dir)) {
             std::cerr << "Error: Package '" << cfg.pkg_name << "' is not installed." << std::endl;
             return;
@@ -114,18 +112,15 @@ void Manager::fetchRemote(std::string pkg_name) {
     }
 }
 
-void Manager::fetchPackgeInstall() {
-    bool is_global = false; //temp boolean for now
+void Manager::fetchPackageInstall() {
     std::string binary_path = pkg.package;
-    std::string bins_dir;
+    std::string bins_dir = std::string(home) + (cfg.flags.global ?  "/.nypkg/bins/" : "/.nytrogen/bins/");
 
-    if (is_global) {
-        bins_dir = std::string(home) + "/.nypkg/bins/";
-    } else {
-        bins_dir = std::string(home) + "/.nytrogen/bins/";
+    if (!std::filesystem::exists(bins_dir)) {
+        std::filesystem::create_directories(bins_dir);
     }
 
-    std::filesystem::copy_file(binary_path, bins_dir);
+    std::filesystem::copy_file(binary_path, bins_dir + pkg.name, std::filesystem::copy_options::overwrite_existing);
 }
 
 void Manager::list() {
