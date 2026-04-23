@@ -12,6 +12,7 @@ std::unordered_map<std::string, bool*> flag_map {
     {"install", &cfg.flags.install}, {"-S", &cfg.flags.install},
     {"remove", &cfg.flags.remove},   {"-R", &cfg.flags.remove},
     {"-U", &cfg.flags.url},
+    {"init", &cfg.flags.init},
     {"global", &cfg.flags.global},   {"-g", &cfg.flags.global},
     {"list", &cfg.flags.list},       {"-l", &cfg.flags.list}, {"-Ql", &cfg.flags.list},
 };
@@ -36,9 +37,12 @@ int main(int argc, char* argv[]) {
         Manager manager;
         manager.list();
         return 0;
+    } else if (cfg.flags.init) {
+        Manager manager;
+        manager.run();
     }
 
-    if (cfg.pkg_name.empty()) {
+    if (!cfg.flags.init && cfg.pkg_name.empty()) {
         std::cerr << "Error: No package name specified." << std::endl;
         return 1;
     }

@@ -9,33 +9,53 @@ Package pkg;
 const char* home = std::getenv("HOME");
 
 void Manager::fetch(std::string url, std::string dest) {
-    std::string registry_dir = std::string(home) + "/.nytrogen/registry/" + pkg.name + ".json";
-    std::string sources_dir = std::string(home) + "/.nytrogen/src/" + pkg.name + "/";
+    std::string base_dir = cfg.flags.global ? "/.nypkg/" : "/.nytrogen/";
 
-    url = pkg.repo_url;
-    dest = sources_dir;
-    std::string cmd = "git clone " + url + " " + dest;
+    std::string registry_dir = std::string(home) + base_dir + "registry/" + pkg.name + ".json";
+    std::string sources_dir = std::string(home) + base_dir + "src/" + pkg.name + "/";
 
-    if (!std::filesystem::exists(sources_dir)) {
-        std::cout << "Making directory: " << sources_dir << std::endl;
-        std::filesystem::create_directories(sources_dir);
+    std::string final_url = url.empty() ? pkg.repo_url : url;
+
+    if (final_url.empty()) {
+        std::cerr << "Error: No repository URL provided." << std::endl;
+        return;
     }
-    if (pkg.isValid()) {
-        std::cout << "Cloning repo: " << url << " into " << dest << std::endl;
+    else std::cout << "Fetching URL: " << url << " for package: " << pkg.name << std::endl;
+
+    if (std::filesystem::exists(sources_dir)) {
+        std::cout << "Sources already exist. Skipping clone..." << std::endl;
     } else {
-        std::cerr << "Error: no package was found.";
+        std::cout << "Cloning repo: " << final_url << " into " << sources_dir << std::endl;
+        std::string clone_cmd = "git clone " + final_url + " " + sources_dir;
+
+        if (std::system(clone_cmd.c_str()) != 0) {
+            std::cerr << "Error: Git clone failed." << std::endl;
+            return; 
+        }
     }
 
-    int result = system(cmd.c_str());
-    if (result == 0) {
-        std::cout << "Registering package metadata..." << std::endl;
-        std::cout << "Registering path: " << registry_dir << std::endl;
-        std::filesystem::create_directories(std::filesystem::path(registry_dir).parent_path());
-        JsonParser::write(registry_dir, pkg);
-    }
+    std::cout << "Registering package metadata..." << std::endl;
+    std::cout << "Registering path: " << registry_dir << std::endl;
+    std::filesystem::create_directories(std::filesystem::path(registry_dir).parent_path());
+    JsonParser::write(registry_dir, pkg);
 }
 
 void Manager::run() {
+    if (cfg.flags.init) {
+        initializePath();
+        return;
+    }
+
+    if (cfg.pkg_name.find(".json") != std::string::npos) {
+        if (std::filesystem::exists(cfg.pkg_name)) {
+            std::cout << "Loading local package metadata: " << cfg.pkg_name << std::endl;
+            pkg = JsonParser::parse(cfg.pkg_name);
+        } else {
+            std::cerr << "Error: Local file " << cfg.pkg_name << " not found." << std::endl;
+            return;
+        }
+    }
+
     // Fetch online package from repo
     if (cfg.flags.url) {
         fetchRemote(cfg.pkg_name);
@@ -53,9 +73,9 @@ void Manager::run() {
         if (std::filesystem::exists(registry_dir)) {
             std::cerr << "Package already exists." << std::endl;
         }
-        else Manager::fetch(pkg.repo_url, cfg.pkg_name);
+        else Manager::fetch(pkg.repo_url, active_name);
 
-        std::cout << "Installing package: " << cfg.pkg_name << std::endl;
+        std::cout << "Installing package: " << active_name << std::endl;
 
         if (std::filesystem::exists(sources_dir)) {
             std::filesystem::current_path(sources_dir);
@@ -73,10 +93,10 @@ void Manager::run() {
     // Remove package
     if (cfg.flags.remove) {
         if (!std::filesystem::exists(registry_dir)) {
-            std::cerr << "Error: Package '" << cfg.pkg_name << "' is not installed." << std::endl;
+            std::cerr << "Error: Package '" << active_name << "' is not installed." << std::endl;
             return;
         }
-        std::cout << "Removing package: " << cfg.pkg_name << std::endl;
+        std::cout << "Removing package: " << active_name << std::endl;
 
         if (std::filesystem::exists(sources_dir)) {
             std::cout << "Deleting sources: " << sources_dir << std::endl;
@@ -120,7 +140,23 @@ void Manager::fetchPackageInstall() {
         std::filesystem::create_directories(bins_dir);
     }
 
-    std::filesystem::copy_file(binary_path, bins_dir + pkg.name, std::filesystem::copy_options::overwrite_existing);
+    std::string source_dir = binary_path.substr(0, binary_path.find_last_of("/\\"));
+    if (!std::filesystem::exists(source_dir)) {
+        std::cerr << "Error: Build output directory " << source_dir << " not found. Did the build fail?" << std::endl;
+        return; // Exit gracefully instead of crashing
+    }
+
+    if (binary_path.find("*") != std::string::npos) {
+        std::string source_dir = binary_path.substr(0, binary_path.find_last_of("/\\"));
+
+        std::filesystem::copy(source_dir, bins_dir, 
+            std::filesystem::copy_options::recursive | 
+            std::filesystem::copy_options::overwrite_existing);
+
+        std::cout << "Successfully deployed package assets to " << bins_dir << std::endl;
+    } else {
+        std::filesystem::copy_file(binary_path, bins_dir + pkg.name, std::filesystem::copy_options::overwrite_existing);
+    }
 }
 
 void Manager::list() {
@@ -146,5 +182,34 @@ void Manager::list() {
                 std::cout << "  " << entry.path().stem().string() << " (metadata corrupt)" << std::endl;
             }
         }
+    }
+}
+
+void Manager::initializePath() {
+    std::string home_dir = std::getenv("HOME");
+    std::string shell_path = std::getenv("SHELL") ? std::getenv("SHELL") : "";
+    
+    std::string local_bin = home_dir + "/.nytrogen/bins";
+    std::string global_bin = home_dir + "/.nypkg/bins";
+
+    if (shell_path.find("fish") != std::string::npos) {
+        // For fish
+        std::string fish_cmd = "fish -c 'fish_add_path " + local_bin + " " + global_bin + "'";
+        std::system(fish_cmd.c_str());
+        std::cout << "Detected fish shell. Used fish_add_path for persistence." << std::endl;
+    } else {
+        // For bash/zsh/sh
+        std::string bashrc = home_dir + "/.bashrc";
+        std::string local_export = "export PATH=\"" + local_bin + ":$PATH\"";
+        std::string global_export = "export PATH=\"" + global_bin + ":$PATH\"";
+
+        std::string cmd_local = "grep -qF '" + local_export + "' " + bashrc + " || echo '" + local_export + "' >> " + bashrc;
+        std::string cmd_global = "grep -qF '" + global_export + "' " + bashrc + " || echo '" + global_export + "' >> " + bashrc;
+
+        std::system(cmd_local.c_str());
+        std::system(cmd_global.c_str());
+
+        std::cout << "Successfully updated " << bashrc << std::endl;
+        std::cout << "Added paths to your $PATH. Restart your terminal to apply." << std::endl;
     }
 }

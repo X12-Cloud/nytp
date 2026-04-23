@@ -13,6 +13,7 @@ struct Config {
         bool url = false;
         bool global = false;
         bool list = false;
+        bool init = false;
 } flags;
 
 };

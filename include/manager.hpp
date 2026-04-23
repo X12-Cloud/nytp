@@ -11,6 +11,7 @@ public:
     static void uninstall();
     static void fetchPackageInstall();
     static void list();
+    static void initializePath();
 };
 
 #endif
