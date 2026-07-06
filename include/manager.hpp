@@ -1,18 +1,36 @@
 #ifndef MANAGER_HPP
 #define MANAGER_HPP
 
-#include "utils.hpp"
+#include "package.hpp"
+#include <string>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 class Manager {
 public:
-    static void run();
-    static void fetch(std::string url, std::string dest);
-    static void fetchRemote(std::string url);
-    static void uninstall();
-    static void fetchPackageInstall();
-    static void list();
-    static void initializePath();
+    void run(int argc, char* argv[]);
+    void list();
+
+private:
+    // Core Workflow
+    void install(const std::string& name);
+    void update(const std::string& name);
+    void remove(const std::string& name);
+
+    // Internal Helpers
+    void fetchRemoteMetadata(const std::string& pkg_name);
+    void cloneRepository(const std::string& url, const fs::path& dest);
+    void pullArchive(const std::string& url, const fs::path& dest);
+    void extractArchive(const fs::path& src, const fs::path& dest);
+    void runBuild(const Package& pkg, const fs::path& source_dir);
+    void deployBinaries(const Package& pkg, const fs::path& source_dir);
+    void initializeShellPath();
+
+    fs::path getBasePath() const;
+    bool executeSafe(const std::string& cmd);
+
+    Package pkg;
 };
 
 #endif
-

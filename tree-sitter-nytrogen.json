@@ -1,8 +1,0 @@
-{
-  "name": "tree-sitter-nytrogen",
-  "version": "1.0.0",
-  "repo": "https://github.com/X12-Cloud/tree-sitter-nytrogen",
-  "build": "echo \" [insert build command] \"",
-  "dependencies": [],
-  "package": ""
-}

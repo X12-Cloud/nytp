@@ -15,4 +15,3 @@ add_executable(nytp ${SOURCES})
 target_include_directories(nytp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(nytp nlohmann_json::nlohmann_json)
-
