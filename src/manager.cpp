@@ -90,6 +90,33 @@ void Manager::run() {
         if (!pkg.package.empty()) fetchPackageInstall();
     }
 
+    // Update package
+    if (cfg.flags.update) {
+        if (!std::filesystem::exists(registry_dir)) {
+            std::cerr << "Package doesnt exist." << std::endl;
+        } else {
+            std::string remove_reg = "rm -rf " + registry_dir + "/" + active_name;
+            std::string remove_src = "rm -rf " + sources_dir + "/" + active_name;
+            std::system(remove_reg.c_str());
+            std::system(remove_src.c_str());
+            Manager::fetch(pkg.repo_url, active_name);
+        }
+
+        std::cout << "Updating package: " << active_name << std::endl;
+
+        if (std::filesystem::exists(sources_dir)) {
+            std::filesystem::current_path(sources_dir);
+        }
+
+        if (!pkg.build_cmd.empty()) {
+            std::system(pkg.build_cmd.c_str());
+        } else if (std::filesystem::exists("install.sh")) {
+            std::system("chmod +x install.sh && ./install.sh");
+        } else std::cerr << "Error: No build script or install.sh file found." << std::endl;
+
+        if (!pkg.package.empty()) fetchPackageInstall();
+    }
+
     // Remove package
     if (cfg.flags.remove) {
         if (!std::filesystem::exists(registry_dir)) {

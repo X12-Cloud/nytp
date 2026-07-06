@@ -10,6 +10,7 @@ Config cfg;
 
 std::unordered_map<std::string, bool*> flag_map {
     {"install", &cfg.flags.install}, {"-S", &cfg.flags.install},
+    {"-Su", &cfg.flags.update},
     {"remove", &cfg.flags.remove},   {"-R", &cfg.flags.remove},
     {"-U", &cfg.flags.url},
     {"init", &cfg.flags.init},
@@ -33,13 +34,10 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    if (cfg.flags.list) {
+    if (cfg.flags.list || cfg.flags.init || cfg.flags.update) {
         Manager manager;
         manager.list();
         return 0;
-    } else if (cfg.flags.init) {
-        Manager manager;
-        manager.run();
     }
 
     if (!cfg.flags.init && cfg.pkg_name.empty()) {

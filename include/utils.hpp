@@ -9,6 +9,7 @@ struct Config {
 
     struct {
         bool install = false;
+        bool update = false;
         bool remove = false;
         bool url = false;
         bool global = false;

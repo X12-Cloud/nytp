@@ -13,8 +13,8 @@ for arg in "$@"; do
 done
 
 echo "--- Starting Build ---"
-# rm -rf $BUILD_DIR
-# cmake -B $BUILD_DIR
+#rm -rf $BUILD_DIR
+#cmake -B $BUILD_DIR
 cmake --build $BUILD_DIR
 
 if [ $? -eq 0 ]; then
